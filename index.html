@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEHWA - Online Store</title>
+  <style>
+    /* CSS Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color:rgb(160,149,141); color: #111; }
+    header { background: rgb(160,149,141); border-bottom: 1px solid #e5e5e5; position: sticky; top: 0; z-index: 100; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; }
+    .logo { font-size: 26px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; user-select: none; }
+    .search-cart { display: flex; align-items: center; gap: 15px; }
+    .search-box input { padding: 8px 15px; border: 1px solid #ccc; border-radius: 20px; outline: none; }
+    .cart-btn { background: #000; color: #fff; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    
+    /* Navigation / Categories */
+    nav { background: rgb(160,149,141); border-top: 1px solid #eee; display: flex; justify-content: center; gap: 20px; padding: 12px 0; overflow-x: auto; }
+    nav a { font-weight: 600; font-size: 13px; text-transform: uppercase; color: #444; cursor: pointer; transition: 0.3s; }
+    nav a:hover { color: #000; text-decoration: underline; }
+
+    /* Slideshow */
+    .slider { width: 100%; height: 320px; position: relative; overflow: hidden; background: #111; }
+    .slide { display: none; width: 100%; height: 100%; object-fit: cover; }
+    .slide.active { display: block; }
+    .slider-text { position: absolute; bottom: 30px; left: 5%; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+
+    /* Container & Sections */
+    .container { padding: 40px 5%; }
+    .section-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; text-transform: uppercase; text-align: center; }
+    
+    /* Product Grid */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .product-card { background: rgb(134,110,110); border: 1px solid #eee; border-radius: 8px; overflow: hidden; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+    .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 6px; }
+    .product-title { font-size: 15px; font-weight: 700; margin: 10px 0 5px; }
+    .product-price { font-size: 14px; color: #555; font-weight: 600; }
+
+    /* Quantity Controls (- 1 +) */
+    .quantity-control { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 6px; width: fit-content; margin: 10px 0; background: #fafafa; }
+    .quantity-btn { background: none; border: none; padding: 5px 12px; font-size: 16px; cursor: pointer; color: #333; }
+    .quantity-number { padding: 0 10px; font-weight: 600; border-left: 1px solid #ddd; border-right: 1px solid #ddd; }
+    
+    .add-to-cart-btn { background: #000; color: #fff; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .add-to-cart-btn:hover { background: #333; }
+
+    /* Admin Panel Box */
+    .admin-panel { background: #fff; border: 2px dashed #333; padding: 20px; margin: 20px 5%; border-radius: 8px; display: none; }
+    .admin-panel input, .admin-panel select { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; }
+
+    /* Feedback Section */
+    .feedback-section { background: rgb(160,149,141); padding: 40px 5%; border-top: 1px solid #eee; margin-top: 40px; }
+    .feedback-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+    .feedback-card { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+    .feedback-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 10px; }
+    .feedback-text { font-size: 14px; margin-bottom: 8px; color: #333; }
+    .feedback-user { font-size: 13px; font-weight: bold; color: #555; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="top-bar">
+      <!-- Double click on logo opens admin panel -->
+      <div class="logo" ondblclick="toggleAdminPanel()">SEHWA</div>
+      <div class="search-cart">
+        <div class="search-box">
+          <input type="text" placeholder="Search..." id="searchInput">
+        </div>
+        <div class="cart-btn" onclick="openCheckout()">🛒 Cart (<span id="cartCount">0</span>)</div>
+      </div>
+    </div>
+    
+    <!-- Categories -->
+    <nav>
+      <a onclick="filterCategory('All')">All</a>
+      <a onclick="filterCategory('Bags')">Bags</a>
+      <a onclick="filterCategory('Mugs')">Mugs</a>
+      <a onclick="filterCategory('Cap')">Cap</a>
+      <a onclick="filterCategory('Hoodies')">Hoodies</a>
+      <a onclick="filterCategory('Candles')">Candles</a>
+      <a onclick="filterCategory('Concrete')">Concrete</a>
+      <a onclick="filterCategory('Gift Box')">Gift Box</a>
+    </nav>
+  </header>
+
+  <!-- Slideshow -->
+  <div class="slider">
+    <img src="slideshow1.jpg" class="slide active">
+    <img src="slideshow2.jpg" class="slide">
+    <div class="slider-text">
+      <h2>REFLECT YOUR STYLE</h2>
+      
+    </div>
+  </div>
+
+  <!-- Admin Panel Box -->
+  <div class="admin-panel" id="adminPanel">
+    <h3>Add New Product (Admin Only)</h3>
+    <input type="text" id="newTitle" placeholder="Product Name">
+    <input type="number" id="newPrice" placeholder="Price ($)">
+    <select id="newCategory">
+      <option value="Bags">Bags</option>
+      <option value="Mugs">Mugs</option>
+      <option value="Cap">Cap</option>
+      <option value="Hoodies">Hoodies</option>
+      <option value="Candles">Candles</option>
+      <option value="Concrete">Concrete</option>
+      <option value="Gift Box">Gift Box</option>
+    </select>
+    <input type="text" id="newColors" placeholder="Available Colors (e.g. Black, White, Red)">
+    <input type="text" id="newSizes" placeholder="Available Sizes for Clothing (e.g. S, M, L, XL)">
+    <input type="text" id="newImgs" placeholder="Image URLs separated by comma (e.g. url1, url2, url3)">
+    <button onclick="addNewProduct()" style="background:#000; color:#fff; padding:10px; border:none; width:100%; border-radius:4px; font-weight:bold; cursor:pointer; margin-top:10px;">Save Product</button>
+  </div>
+
+  <!-- Products Section -->
+  <div class="container">
+    <h2 class="section-title" id="categoryTitle">All Products</h2>
+    <div class="product-grid" id="productGrid"></div>
+  </div>
+
+  <!-- Feedback Section -->
+  <div class="feedback-section">
+    <h2 class="section-title">Customer Feedback & Reviews</h2>
+    <div class="feedback-grid" id="feedbackGrid"></div>
+    
+    <!-- Submit Feedback Form -->
+    <div style="margin-top: 30px; background: rgb(134,110,110); padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+      <h3>Leave Your Feedback</h3>
+      <input type="text" id="fbName" placeholder="Your Name" style="width:150px; padding:8px; margin-right:10px; margin-top:10px;">
+      <input type="text" id="fbText" placeholder="Your Review..." style="width:250px; padding:8px; margin-right:10px; margin-top:10px;">
+      <input type="file" id="fbImg" accept="image/*" style="margin-top:10px;">
+      <button onclick="submitFeedback()" style="background:#000; color:#fff; padding:8px 15px; border:none; border-radius:4px; cursor:pointer; margin-top:10px;">Submit Review</button>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript Logic
+    let products = [
+      { id: 1, name: "Knight Candle", category: "Candle", price: 5.00, imgs: ["knightcandle2.jpg","knightcandle1.jpg"], colors: ["Black", "Brown","Biege"]},
+      { id: 2, name: "Daisy Candle", category: "Candles", price: 3.00, imgs: ["daisy1.jpg","daisy2.jpg","daisy3.jpg","daisy4.jpg"], colors: ["White", "Red","Pink","Purple","Deep Blue","Light Blue"]},
+      { id: 3, name: "Classic Cap", category: "Cap", price: 5.00, imgs: ["https://via.placeholder.com/200"], colors: ["Black", "Navy"], sizes: ["Free Size"] },
+      { id: 4, name: "Concrete Tray", category: "Concrete", price: 10.00, imgs: ["flowerconcrete1.jpg","flowerconcrete2.jpg"], colors: ["White","Black"] }
+    ];
+
+    let cart = [];
+    let feedbacks = []; 
+
+    // Render Products Function
+    function renderProducts(filter = 'All') {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+      
+      let filtered = filter === 'All' ? products : products.filter(p => p.category === filter);
+      
+      filtered.forEach(p => {
+        let mainImg = p.imgs && p.imgs.length > 0 ? p.imgs[0] : "https://via.placeholder.com/200";
+        grid.innerHTML += `
+          <div class="product-card" onclick="openProductModal(${p.id})">
+            <img src="${mainImg}" alt="${p.name}">
+            <div class="product-title">${p.name}</div>
+            <div class="product-price">$${p.price.toFixed(2)}</div>
+            
+            <div class="quantity-control" onclick="event.stopPropagation()">
+              <button class="quantity-btn" onclick="changeQty(${p.id}, -1)">-</button>
+              <span class="quantity-number" id="qty-${p.id}">1</span>
+              <button class="quantity-btn" onclick="changeQty(${p.id}, 1)">+</button>
+            </div>
+
+            <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCardDirect(${p.id})">Add to Cart</button>
+          </div>
+        `;
+      });
+    }
+
+    function changeQty(id, val) {
+      let qtyElem = document.getElementById(`qty-${id}`);
+      let current = parseInt(qtyElem.innerText);
+      if (current + val >= 1) qtyElem.innerText = current + val;
+    }
+
+    function addToCardDirect(id) {
+      let qty = parseInt(document.getElementById(`qty-${id}`).innerText);
+      let prod = products.find(p => p.id === id);
+      cart.push({ ...prod, quantity: qty, selectedColor: prod.colors?.[0] || 'Default', selectedSize: prod.sizes?.[0] || 'Standard' });
+      document.getElementById('cartCount').innerText = cart.length;
+      alert(`Added ${qty}x ${prod.name} to cart!`);
+    }
+
+  // Modal Details View with Multiple Images, Colors, and Sizes
+function openProductModal(id) {
+  let prod = products.find(p => p.id === id);
+  if (!prod) return;
+
+  let modal = document.getElementById('productModal');
+  let content = document.getElementById('modalContent');
+  
+  let imgs = prod.imgs && prod.imgs.length > 0 ? prod.imgs : ["https://via.placeholder.com/200"];
+  let mainImg = imgs[0];
+
+  
+  let thumbsHTML = imgs.length > 1 ? `
+    <div style="display:flex; gap:8px; margin:10px 0; overflow-x:auto;">
+      ${imgs.map(img => `<img src="${img}" onclick="changeModalMainImage('${img}')" style="width:50px; height:50px; object-fit:cover; border-radius:4px; cursor:pointer; border:1px solid #ccc;">`).join('')}
+    </div>` : '';
+
+  
+  let colorsHTML = prod.colors && prod.colors.length > 0 ? `
+    <div style="margin: 10px 0;">
+      <label style="font-weight:bold; color:#fff;">Select Color:</label>
+      <select id="modal-color-${prod.id}" style="width:100%; padding:8px; margin-top:5px; border-radius:4px;">
+        ${prod.colors.map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+    </div>` : '';
+
+  
+  let sizesHTML = prod.sizes && prod.sizes.length > 0 ? `
+    <div style="margin: 10px 0;">
+      <label style="font-weight:bold; color:#fff;">Select Size:</label>
+      <select id="modal-size-${prod.id}" style="width:100%; padding:8px; margin-top:5px; border-radius:4px;">
+        ${prod.sizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+      </select>
+    </div>` : '';
+
+  content.innerHTML = `
+    <img id="modalMainImg" src="${mainImg}" style="width:100%; height:220px; object-fit:cover; border-radius:6px;">
+    ${thumbsHTML}
+    <h3 style="margin-top:10px; color:#fff;">${prod.name}</h3>
+    <p style="font-weight:bold; color:#eee; margin:5px 0;">$${prod.price.toFixed(2)}</p>
+    ${colorsHTML}
+    ${sizesHTML}
+    <div class="quantity-control" style="margin: 15px 0;">
+      <button class="quantity-btn" onclick="changeQty(${prod.id}, -1)">-</button>
+      <span class="quantity-number" id="qty-${prod.id}">1</span>
+      <button class="quantity-btn" onclick="changeQty(${prod.id}, 1)">+</button>
+    </div>
+    <button onclick="addToCartFromModal(${prod.id})" style="background:#000; color:#fff; width:100%; padding:10px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Add to Cart</button>
+  `;
+  
+  modal.style.display = 'flex';
+}
+
+    function changeModalMainImage(imgSrc) {
+      document.getElementById('modalMainImg').src = imgSrc;
+    }
+
+    function closeModal() {
+      document.getElementById('productModal').style.display = 'none';
+    }
+
+    function addToCartFromModal(id) {
+      let qty = parseInt(document.getElementById(`qty-${id}`).innerText);
+      let prod = products.find(p => p.id === id);
+      
+      let colorElem = document.getElementById(`modal-color-${id}`);
+      let selectedColor = colorElem ? colorElem.value : "Default";
+
+      let sizeElem = document.getElementById(`modal-size-${id}`);
+      let selectedSize = sizeElem ? sizeElem.value : "Standard";
+
+      cart.push({ ...prod, quantity: qty, selectedColor: selectedColor, selectedSize: selectedSize });
+      document.getElementById('cartCount').innerText = cart.length;
+      alert(`Added ${prod.name} (${selectedColor}, ${selectedSize}) to cart!`);
+      closeModal();
+    }
+
+    function filterCategory(cat) {
+      document.getElementById('categoryTitle').innerText = cat + " Products";
+      renderProducts(cat);
+    }
+
+    // Admin Panel Management via Double Click on Logo
+    function toggleAdminPanel() {
+      let pass = prompt("Enter Admin Password:");
+      if (pass === "Tatanasma20202005") { 
+        let panel = document.getElementById('adminPanel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+      } else if (pass !== null) {
+        alert("Incorrect Password!");
+      }
+    }
+
+    function addNewProduct() {
+      let title = document.getElementById('newTitle').value;
+      let price = parseFloat(document.getElementById('newPrice').value);
+      let category = document.getElementById('newCategory').value;
+      let colorsInput = document.getElementById('newColors').value;
+      let sizesInput = document.getElementById('newSizes').value;
+      let imgsInput = document.getElementById('newImgs').value;
+
+      if (!title || !price) {
+        alert("Please fill in all required fields!");
+        return;
+      }
+
+      let colors = colorsInput ? colorsInput.split(',').map(c => c.trim()) : [];
+      let sizes = sizesInput ? sizesInput.split(',').map(s => s.trim()) : [];
+      let imgs = imgsInput ? imgsInput.split(',').map(img => img.trim()) : ["https://via.placeholder.com/200"];
+
+      let newProd = { 
+        id: products.length + 1, 
+        name: title, 
+        category: category, 
+        price: price, 
+        imgs: imgs, 
+        colors: colors, 
+        sizes: sizes 
+      };
+
+      products.push(newProd);
+      renderProducts();
+      toggleAdminPanel();
+      alert("Product added successfully!");
+    }
+
+    // Checkout via WhatsApp & IBAN
+    function openCheckout() {
+      if (cart.length === 0) {
+        alert("سەبەتەکەت بەتاڵە!");
+        return;
+      }
+
+      let name = prompt("تکایە ناوی تەواوت بنووسە:");
+      let phone = prompt("تکایە ژمارەی مۆبایل و ئەدرەسەکەت بنووسە:");
+
+      if (name && phone) {
+        let total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        let orderDetails = `کڕیاری بەڕێز: ${name}\nپەیوەندی/ئەدرەس: ${phone}\n\n**لیستی ئۆردەر:**\n`;
+        
+        cart.forEach((item, index) => {
+          orderDetails += `${index + 1}. ${item.name} (ڕەنگ: ${item.selectedColor}, سایز: ${item.selectedSize}) - بڕ: ${item.quantity} - نرخ: $${item.price * item.quantity}\n`;
+        });
+        
+        orderDetails += `\n**کۆی گشتی:** $${total.toFixed(2)}`;
+        orderDetails += `\n\nتکایە پارەکە بنێرە بۆ IBAN: IQ93RAFB098010010099877`;
+
+        let myPhoneNumber = "966542056418"; 
+        let whatsappUrl = `https://wa.me/${myPhoneNumber}?text=${encodeURIComponent(orderDetails)}`;
+
+        cart = [];
+        document.getElementById('cartCount').innerText = 0;
+        window.open(whatsappUrl, '_blank');
+      }
+    }
+
+    // Slideshow Script
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    setInterval(() => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }, 4000);
+
+    // Feedback Render & Submit functions
+    function renderFeedbacks() {
+      const fbGrid = document.getElementById('feedbackGrid');
+      fbGrid.innerHTML = '';
+     
+      if (feedbacks.length === 0) {
+        fbGrid.innerHTML = `<p style="color:#777; text-align:center; grid-column:1/-1;">No reviews yet. Be the first to leave feedback!</p>`;
+        return;
+      }
+
+      feedbacks.forEach(fb => {
+        fbGrid.innerHTML += `
+          <div class="feedback-card">
+            <img src="${fb.img}" alt="Customer Photo">
+            <p class="feedback-text">"${fb.text}"</p>
+            <p class="feedback-user">- ${fb.name}</p>
+          </div>
+        `;
+      });
+    }
+
+    function submitFeedback() {
+      let name = document.getElementById('fbName').value;
+      let text = document.getElementById('fbText').value;
+      let imgInput = document.getElementById('fbImg');
+
+      if (!name || !text) {
+        alert("Please fill in your name and feedback message!");
+        return;
+      }
+
+      let imgSrc = "https://via.placeholder.com/250x150?text=Customer+Photo";
+     
+      if (imgInput.files && imgInput.files[0]) {
+        imgSrc = URL.createObjectURL(imgInput.files[0]);
+      }
+
+      feedbacks.unshift({ name: name, text: text, img: imgSrc });
+      renderFeedbacks();
+
+      document.getElementById('fbName').value = '';
+      document.getElementById('fbText').value = '';
+      imgInput.value = '';
+     
+      alert("Thank you! Your feedback has been posted successfully.");
+    }
+
+    // Initial load
+    renderProducts();
+    renderFeedbacks();
+  </script>
+
+  <!-- Product Detail Modal Popup -->
+  <div id="productModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:rgb(160,149,141); width:90%; max-width:500px; padding:25px; border-radius:8px; position:relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+      <span onclick="closeModal()" style="position:absolute; top:10px; right:15px; font-size:26px; font-weight:bold; cursor:pointer; color:#333;">&times;</span>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+</body>
+</html>
