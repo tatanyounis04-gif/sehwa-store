@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sehwa Store - Checkout</title>
+
+  <!-- EmailJS Library Integration -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function(){
+      emailjs.init("UzAzvGQhbIZri8tx1");
+    })();
+  </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      padding: 20px;
+      direction: ltr;
+    }
+    .checkout-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #111;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .payment-options {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+    .payment-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .payment-btn.active {
+      border-color: #000;
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+    .submit-btn {
+      width: 100%;
+      background-color: #000;
+      color: #fff;
+      padding: 14px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background-color: #222;
+    }
+  </style>
+</head>
+<body>
+
+<div class="checkout-container">
+  <h2>Sehwa Store Checkout</h2>
+
+  <form id="orderForm">
+    <!-- Size Selection -->
+    <div class="form-group">
+      <label for="size">Select Size *</label>
+      <select id="size" required>
+        <option value="">-- Choose Size --</option>
+        <option value="Small (S)">Small (S)</option>
+        <option value="Medium (M)">Medium (M)</option>
+        <option value="Large (L)">Large (L)</option>
+        <option value="X-Large (XL)">X-Large (XL)</option>
+      </select>
+    </div>
+
+    <!-- Customer Details -->
+    <div class="form-group">
+      <label for="fullName">Full Name *</label>
+      <input type="text" id="fullName" placeholder="Full name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address *</label>
+      <input type="email" id="email" placeholder="Customer email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone Number *</label>
+      <input type="tel" id="phone" placeholder="07XX XXX XXXX" required>
+    </div>
+
+    <div class="form-group">
+      <label for="address">Delivery Address *</label>
+      <textarea id="address" rows="3" placeholder="City, Street, House / Building details" required></textarea>
+    </div>
+
+    <!-- Payment Selection -->
+    <div class="form-group">
+      <label>Payment Method *</label>
+      <div class="payment-options">
+        <div class="payment-btn" id="btnMastercard" onclick="selectPayment('MasterCard')">💳 MasterCard</div>
+        <div class="payment-btn" id="btnZaincash" onclick="selectPayment('ZainCash')">📱 ZainCash</div>
+      </div>
+      <input type="hidden" id="selectedPayment" required>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Place Order</button>
+  </form>
+</div>
+
+<script>
+  let chosenPayment = "";
+
+  function selectPayment(method) {
+    chosenPayment = method;
+    document.getElementById('selectedPayment').value = method;
+
+    document.getElementById('btnMastercard').classList.remove('active');
+    document.getElementById('btnZaincash').classList.remove('active');
+const detailsDiv = document.getElementById('paymentDetails');
+detailsDiv.style.display = "block";
+    if (method === 'MasterCard') {
+      document.getElementById('btnMastercard').classList.add('active');
+      detailsDiv.innerHTML = '<strong>MasterCard / IBAN Details:</strong> <br> Please Make a Payment For This IBAN:<br><span style="font-family:monospace; font-weight:bold; font-size:14px; color:#000; ">IQ93RAFB098010010099877</span>';
+    } else if (method === 'ZainCash') {
+      document.getElementById('btnZaincash').classList.add('active');
+      detailsDiv.innerHTML = '<strong> zainCash Details:</strong><br>Please Make a Payment For Tith ZainCash:<br><span style="font-family:monospace; font-weight:bold; font-size:14px;color:#000;">=964 751 543 5537 </span>';
+    }
+    document.getElementById('paymentDetails').style.display ="none";
+  }
+
+  document.getElementById('orderForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    if (!chosenPayment) {
+      alert("Please select a payment method (MasterCard or ZainCash).");
+      return;
+    }
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.innerText = "Processing...";
+    submitBtn.disabled = true;
+
+    const orderData = {
+      customer_name: document.getElementById('fullName').value,
+      customer_email: document.getElementById('email').value,
+      phone_number: document.getElementById('phone').value,
+      address: document.getElementById('address').value,
+      item_size: document.getElementById('size').value,
+      payment_method: chosenPayment
+    };
+
+    emailjs.send("service_yl1faji", "template_1zvgj4b", orderData)
+      .then(function(response) {
+        alert("Thank you! Your order has been placed successfully.");
+        document.getElementById('orderForm').reset();
+        document.getElementById('btnMastercard').classList.remove('active');
+        document.getElementById('btnZaincash').classList.remove('active');
+        chosenPayment = "";
+        submitBtn.innerText = "Place Order";
+        submitBtn.disabled = false;
+      }, function(error) {
+        alert("Failed to send order notification. Error: " + JSON.stringify(error));
+        submitBtn.innerText = "Place Order";
+        submitBtn.disabled = false;
+      });
+  });
+</script>
+
+</body>
+</html>
