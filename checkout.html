@@ -133,6 +133,7 @@
         <div class="payment-btn" id="btnZaincash" onclick="selectPayment('ZainCash')">📱 ZainCash</div>
       </div>
       <input type="hidden" id="selectedPayment" required>
+      <div id="paymentDetails" style="margin-top: 10px; padding:12px; background: #fff3cd;border:1px solid #ffeeba; border-radius:6px; font-size:13px; color:#856404; display: none;"></div>
     </div>
 
     <button type="submit" class="submit-btn" id="submitBtn">Place Order</button>
@@ -157,7 +158,7 @@ detailsDiv.style.display = "block";
       document.getElementById('btnZaincash').classList.add('active');
       detailsDiv.innerHTML = '<strong> zainCash Details:</strong><br>Please Make a Payment For Tith ZainCash:<br><span style="font-family:monospace; font-weight:bold; font-size:14px;color:#000;">=964 751 543 5537 </span>';
     }
-    document.getElementById('paymentDetails').style.display ="none";
+    
   }
 
   document.getElementById('orderForm').addEventListener('submit', function(event) {
